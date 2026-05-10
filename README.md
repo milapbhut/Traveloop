@@ -1,2 +1,2 @@
-# odoo_Hackathon
+# odoo_Hackathon (Traveloop)
 
