@@ -1,0 +1,143 @@
+CREATE DATABASE IF NOT EXISTS traveloop
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE traveloop;
+
+DROP TABLE IF EXISTS community_posts;
+DROP TABLE IF EXISTS trip_notes;
+DROP TABLE IF EXISTS packing_items;
+DROP TABLE IF EXISTS stop_activities;
+DROP TABLE IF EXISTS budget_items;
+DROP TABLE IF EXISTS trip_stops;
+DROP TABLE IF EXISTS activities;
+DROP TABLE IF EXISTS cities;
+DROP TABLE IF EXISTS trips;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(80) NOT NULL,
+    last_name VARCHAR(80) NOT NULL,
+    email VARCHAR(160) NOT NULL UNIQUE,
+    phone VARCHAR(40) NULL,
+    city VARCHAR(120) NULL,
+    country VARCHAR(120) NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    bio TEXT NULL,
+    language VARCHAR(40) NOT NULL DEFAULT 'English',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE trips (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    name VARCHAR(160) NOT NULL,
+    description TEXT NULL,
+    start_date DATE NULL,
+    end_date DATE NULL,
+    cover_photo VARCHAR(255) NULL,
+    budget_limit DECIMAL(10,2) NOT NULL DEFAULT 0,
+    status ENUM('ongoing', 'upcoming', 'completed') NOT NULL DEFAULT 'upcoming',
+    visibility ENUM('private', 'friends', 'public') NOT NULL DEFAULT 'private',
+    share_code VARCHAR(40) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_trips_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE cities (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(140) NOT NULL,
+    country VARCHAR(120) NOT NULL,
+    region VARCHAR(120) NOT NULL,
+    cost_index INT UNSIGNED NOT NULL DEFAULT 50,
+    popularity INT UNSIGNED NOT NULL DEFAULT 50,
+    image VARCHAR(255) NULL,
+    summary TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE trip_stops (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    trip_id INT UNSIGNED NOT NULL,
+    city_id INT UNSIGNED NOT NULL,
+    start_date DATE NULL,
+    end_date DATE NULL,
+    sort_order INT UNSIGNED NOT NULL DEFAULT 1,
+    note TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_stops_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+    CONSTRAINT fk_stops_city FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE activities (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    city_id INT UNSIGNED NULL,
+    name VARCHAR(160) NOT NULL,
+    type VARCHAR(80) NOT NULL,
+    duration_hours DECIMAL(4,1) NOT NULL DEFAULT 1,
+    cost DECIMAL(10,2) NOT NULL DEFAULT 0,
+    summary TEXT NULL,
+    image VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_activities_city FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE stop_activities (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    stop_id INT UNSIGNED NOT NULL,
+    activity_id INT UNSIGNED NOT NULL,
+    scheduled_time TIME NULL,
+    notes TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_stop_activities_stop FOREIGN KEY (stop_id) REFERENCES trip_stops(id) ON DELETE CASCADE,
+    CONSTRAINT fk_stop_activities_activity FOREIGN KEY (activity_id) REFERENCES activities(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE budget_items (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    trip_id INT UNSIGNED NOT NULL,
+    category VARCHAR(80) NOT NULL,
+    description VARCHAR(180) NOT NULL,
+    vendor VARCHAR(140) NULL,
+    estimated_cost DECIMAL(10,2) NOT NULL DEFAULT 0,
+    actual_cost DECIMAL(10,2) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_budget_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE packing_items (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    trip_id INT UNSIGNED NOT NULL,
+    item VARCHAR(160) NOT NULL,
+    category VARCHAR(80) NOT NULL DEFAULT 'General',
+    packed TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_packing_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE trip_notes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    trip_id INT UNSIGNED NOT NULL,
+    stop_id INT UNSIGNED NULL,
+    title VARCHAR(160) NOT NULL,
+    body TEXT NOT NULL,
+    note_date DATE NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notes_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+    CONSTRAINT fk_notes_stop FOREIGN KEY (stop_id) REFERENCES trip_stops(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE community_posts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    trip_id INT UNSIGNED NOT NULL,
+    title VARCHAR(160) NOT NULL,
+    body TEXT NOT NULL,
+    likes INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_posts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_posts_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
