@@ -1,18 +1,55 @@
-# React + Vite
+# Traveloop PHP/MySQL
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Traveloop is a PHP travel planning application built from the supplied PDF requirements and wireframe image. It includes login/signup, dashboard, trip creation, trip list, itinerary builder, itinerary view, city and activity search, budget breakdown, packing checklist, public sharing, profile settings, trip notes, admin analytics, and expense invoice pages.
 
-Currently, two official plugins are available:
+## Run Locally With XAMPP PHP
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```powershell
+C:\xampp\php\php.exe -S 127.0.0.1:8080 -t public public/index.php
+```
 
-## React Compiler
+Open:
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+```text
+http://127.0.0.1:8080
+```
 
-Note: This will impact Vite dev & build performances.
+The app shows demo data if MySQL is not connected.
 
-## Expanding the ESLint configuration
+## MySQL Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Start MySQL from XAMPP, then import the schema and seed data:
+
+```powershell
+C:\xampp\mysql\bin\mysql.exe -u root < database\schema.sql
+C:\xampp\mysql\bin\mysql.exe -u root traveloop < database\seed.sql
+```
+
+Default database settings are in `config/database.php` and match a standard XAMPP MySQL install:
+
+```text
+host: 127.0.0.1
+port: 3306
+database: traveloop
+user: root
+password: empty
+```
+
+## Project Structure
+
+```text
+app/
+  Controllers/PageController.php
+  Core/Database.php
+  Core/Router.php
+  Core/View.php
+  Models/TravelRepository.php
+  Views/
+config/database.php
+database/schema.sql
+database/seed.sql
+public/index.php
+public/assets/
+```
+
+Use `public/` as the web root in Apache, or run the PHP built-in server command above.
